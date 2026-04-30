@@ -8,10 +8,10 @@ const s3 = new S3Client({ region: process.env.AWS_REGION });
 
 // comment out for lambda(leave as empty object) - CORS Policy handles this
 const responseHeaders = {
-  'Access-Control-Allow-Origin': 'https://main.dho80v77vf9yf.amplifyapp.com',
-  'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS, DELETE',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Content-Type': 'application/json',
+  // 'Access-Control-Allow-Origin': 'https://main.dho80v77vf9yf.amplifyapp.com',
+  // 'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS, DELETE',
+  // 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  // 'Content-Type': 'application/json',
 };
 
 const parseEventBody = (event, fallbackValue) => {
