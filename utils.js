@@ -2,9 +2,11 @@ const jwt = require('jsonwebtoken');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { PutObjectCommand, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { S3Client } = require('@aws-sdk/client-s3');
+const { format } = require('date-fns');
 
 const s3 = new S3Client({ region: process.env.AWS_REGION });
 
+// comment out for lambda(leave as empty object) - CORS Policy handles this
 const responseHeaders = {
   'Access-Control-Allow-Origin': 'https://main.dho80v77vf9yf.amplifyapp.com',
   'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS, DELETE',
@@ -51,7 +53,8 @@ const handleLogin = (event) => {
 
 const getUrlType = (file) => {
   const imageExtension = 'jpg/png/gif/webp/avif';
-  const fileExtension = file.Key.split('.')[1];
+  const splitArray = file.Key.split('.');
+  const fileExtension = splitArray[splitArray.length - 1];
   return imageExtension.includes(fileExtension) ? 'img' : 'vid';
 };
 
@@ -63,11 +66,9 @@ const handleImgList = async (event) => {
   const _imgList = await Promise.all(
     data?.Contents
       ? data.Contents.map((c) =>
-          getSignedUrl(
-            s3,
-            new GetObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: c.Key }),
-            { expiresIn: 3600 },
-          ),
+          getSignedUrl(s3, new GetObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: c.Key }), {
+            expiresIn: 3600,
+          }),
         )
       : [],
   );
@@ -76,6 +77,7 @@ const handleImgList = async (event) => {
     url: imgUrl,
     type: getUrlType(data.Contents[idx]),
     key: data.Contents[idx].Key,
+    lastModified: format(data.Contents[idx].LastModified, 'MM/dd/yyyy'),
   }));
 
   return { statusCode: 200, body: JSON.stringify({ imgList }), headers: responseHeaders };
